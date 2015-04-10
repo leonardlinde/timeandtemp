@@ -29,6 +29,10 @@ wiringpi.mcp3004Setup(100,0)
 # Data pins are WiringPi 0,1,2,3
 display = wiringpi.lcdInit (2, 16, 4, 15,16, 0,1,2,3,0,0,0,0)
 
+# LCD Backlight
+backlightPin = 26 # GPIO12 is set to ground to turn off backlight
+wiringpi.pinMode(backlightPin,1) #output
+wiringpi.digitalWrite(backlightPin, 0)
 
 # Init zmq
 context = zmq.Context()
@@ -49,6 +53,10 @@ cmd.setsockopt(zmq.SUBSCRIBE, 'CMD_LCD')
 poller = zmq.Poller()
 poller.register(info, zmq.POLLIN)
 poller.register(cmd, zmq.POLLIN)
+
+# state variables
+commandState = {'backlight':True}
+
 
 # convert ADC reading to Lux
 def rawToLux( raw ):
@@ -84,6 +92,15 @@ def processSensor(dataIn):
         pp = pprint.PrettyPrinter(indent=4)
         pp.pprint(officeData)
 
+def processCommand(command):
+    # if backlight is on, turn it off
+    if command == 'toggleBacklight':
+        if commandState['backlight']:
+            wiringpi.digitalWrite(backlightPin, 1)
+            commandState['backlight'] = False
+        else:
+            wiringpi.digitalWrite(backlightPin, 0)
+            commandState['backlight'] = True
 
 def main_sub_1602_display():
 
@@ -96,12 +113,10 @@ def main_sub_1602_display():
             exit
 
         if cmd in socks:
-            print 'cmd'
             [queue, dataIn] = cmd.recv_multipart()
-            print "Received Command" + dataIn
+            processCommand(dataIn)
 
         if info in socks:
-            print 'info'
             [queue, dataIn] = info.recv_multipart()
             if queue == 'INF_SENSOR':
                 processSensor(dataIn)
