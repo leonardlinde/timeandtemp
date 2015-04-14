@@ -73,7 +73,8 @@ def main_pub_inf_rf24_sensor() :
             success = read_sensors()
             if success:
                 exception_count = 0
-            else:
+            	sleep(5)
+	    else:
                 print "Radio disconnected - waiting and re-trying "
                 sleep(60)
                 

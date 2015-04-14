@@ -74,18 +74,27 @@ def processSensor(dataIn):
     wiringpi.lcdPosition(display, 0,0)
     now = datetime.datetime.now().strftime("%m/%d/%y %I:%M%p")
     wiringpi.lcdPuts(display, now)
-    if 'temperatureF' in officeData and 'humidity' in officeData:
-        out =  "%3dF %2d%%" % (officeData['temperatureF'], officeData['humidity'])
+    if 'temperatureF' in officeData :
+        out =  "%2dF" % (officeData['temperatureF'])
         wiringpi.lcdPosition(display, 0,1)
         wiringpi.lcdPuts(display, out)
     else:
-        print "Temp/Humidity missing"
+        print "Temp missing"
         pp = pprint.PrettyPrinter(indent=4)
         pp.pprint(officeData)
-        
+
+    if 'pressure' in officeData :
+        out =  "%4dMb" % (officeData['pressure'])
+        wiringpi.lcdPosition(display, 4,1)
+        wiringpi.lcdPuts(display, out)
+    else:
+        print "Pressure missing"
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(officeData)
+
     if 'lux' in officeData:
-        wiringpi.lcdPosition(display, 9,1)
-        out = "%4d lx" % (officeData['lux'])
+        wiringpi.lcdPosition(display, 11,1)
+        out = "%3dLx" % (officeData['lux'])
         wiringpi.lcdPuts(display, out)
     else:
         print "lux missing"
